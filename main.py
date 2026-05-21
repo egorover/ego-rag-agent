@@ -90,6 +90,22 @@ def initialize_components(settings: Settings):
         response_generator = GigaChatResponseGenerator(gigachat_client=gigachat_client)
         logger.info(f"✓ GigaChat клиент инициализирован (модель: {settings.gigachat_model})")
         
+    elif settings.ai_provider == "proxyapi":
+        from ai_proxyapi_processor import ProxyAPIConfig
+        
+        proxyapi_config = ProxyAPIConfig(
+            api_key=settings.proxyapi_api_key,
+            model=settings.proxyapi_model,
+            temperature=settings.proxyapi_temperature,
+            max_tokens=settings.proxyapi_max_tokens,
+            base_url=settings.proxyapi_base_url,
+            proxy_url=settings.proxyapi_proxy_url
+        )
+        
+        proxyapi_client = ProxyAPIClient(config=proxyapi_config)
+        response_generator = OpenAIResponseGenerator(openai_client=proxyapi_client)
+        logger.info(f"✓ ProxyAPI клиент инициализирован (модель: {settings.proxyapi_model})")
+        
     else:
         raise ValueError(f"Неподдерживаемый AI provider: {settings.ai_provider}")
     
@@ -145,7 +161,8 @@ def main():
             print(f"\n❌ ОШИБКА: {e}")
             print("\n💡 Установите переменные окружения:")
             print("   TELEGRAM_BOT_TOKEN - токен Telegram бота")
-            print("   OPENAI_API_KEY - API ключ OpenAI")
+            print("   OPENAI_API_KEY - API ключ OpenAI (для embeddings)")
+            print("   PROXYAPI_API_KEY - API ключ ProxyAPI (для провайдера proxyapi)")
             print("\nИли создайте файл .env с этими переменными.")
             sys.exit(1)
         

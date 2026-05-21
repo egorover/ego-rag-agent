@@ -19,7 +19,7 @@ class Settings:
     # Telegram
     telegram_token: str
     
-    # AI Provider (выбор: "openai" или "gigachat")
+    # AI Provider (выбор: "openai", "gigachat" или "proxyapi")
     ai_provider: str = "gigachat"
     
     # OpenAI
@@ -35,6 +35,14 @@ class Settings:
     gigachat_temperature: float = 0.7
     gigachat_max_tokens: int = 1000
     gigachat_verify_ssl: bool = False  # False для разработки из-за самоподписанного сертификата
+    
+    # ProxyAPI
+    proxyapi_api_key: Optional[str] = None
+    proxyapi_model: str = "gpt-4o-mini"
+    proxyapi_temperature: float = 0.7
+    proxyapi_max_tokens: int = 1000
+    proxyapi_base_url: str = "https://proxyapi.example.com/v1"
+    proxyapi_proxy_url: Optional[str] = None
     
     # ChromaDB
     chroma_persist_dir: str = "./chroma_db"
@@ -78,6 +86,7 @@ class Settings:
                     "Установите переменную окружения или создайте .env файл."
                 )
             gigachat_key = None
+            proxyapi_key = None
         elif ai_provider == "gigachat":
             gigachat_key = os.getenv("GIGACHAT_AUTHORIZATION_KEY")
             if not gigachat_key:
@@ -91,10 +100,25 @@ class Settings:
                     "OPENAI_API_KEY все еще нужен для генерации embeddings. "
                     "Установите переменную окружения или создайте .env файл."
                 )
+            proxyapi_key = None
+        elif ai_provider == "proxyapi":
+            proxyapi_key = os.getenv("PROXYAPI_API_KEY")
+            if not proxyapi_key:
+                raise ValueError(
+                    "PROXYAPI_API_KEY не установлен. "
+                    "Установите переменную окружения или создайте .env файл."
+                )
+            openai_api_key = os.getenv("OPENAI_API_KEY")  # Все еще нужен для embeddings
+            if not openai_api_key:
+                raise ValueError(
+                    "OPENAI_API_KEY нужен для генерации embeddings. "
+                    "Установите переменную окружения или создайте .env файл."
+                )
+            gigachat_key = None
         else:
             raise ValueError(
                 f"Неподдерживаемый AI_PROVIDER: {ai_provider}. "
-                "Используйте 'openai' или 'gigachat'."
+                "Используйте 'openai', 'gigachat' или 'proxyapi'."
             )
         
         return cls(
@@ -110,6 +134,12 @@ class Settings:
             gigachat_model=os.getenv("GIGACHAT_MODEL", "GigaChat"),
             gigachat_temperature=float(os.getenv("GIGACHAT_TEMPERATURE", "0.7")),
             gigachat_max_tokens=int(os.getenv("GIGACHAT_MAX_TOKENS", "1000")),
+            proxyapi_api_key=proxyapi_key,
+            proxyapi_model=os.getenv("PROXYAPI_MODEL", "gpt-4o-mini"),
+            proxyapi_temperature=float(os.getenv("PROXYAPI_TEMPERATURE", "0.7")),
+            proxyapi_max_tokens=int(os.getenv("PROXYAPI_MAX_TOKENS", "1000")),
+            proxyapi_base_url=os.getenv("PROXYAPI_BASE_URL", "https://proxyapi.example.com/v1"),
+            proxyapi_proxy_url=os.getenv("PROXYAPI_PROXY_URL"),
             chroma_persist_dir=os.getenv("CHROMA_PERSIST_DIR", "./chroma_db"),
             chroma_collection=os.getenv("CHROMA_COLLECTION", "documents"),
         )
@@ -131,6 +161,13 @@ class Settings:
         
         if self.ai_provider == "gigachat":
             if not self.gigachat_authorization_key:
+                return False
+            # OpenAI ключ все еще нужен для embeddings
+            if not self.openai_api_key:
+                return False
+        
+        if self.ai_provider == "proxyapi":
+            if not self.proxyapi_api_key:
                 return False
             # OpenAI ключ все еще нужен для embeddings
             if not self.openai_api_key:
