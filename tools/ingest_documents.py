@@ -10,6 +10,10 @@ from typing import List
 import argparse
 import logging
 
+# UTF-8 для Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Добавляем родительскую директорию в путь для импорта
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -68,10 +72,10 @@ def process_documents(
                 all_ids.append(chunk_id)
             
             doc_counter += 1
-            print(f"  ✓ Успешно обработан\n")
+            print(f"  [OK] Успешно обработан\n")
         
         except Exception as e:
-            print(f"  ✗ Ошибка: {e}\n")
+            print(f"  [ERROR] Ошибка: {e}\n")
             continue
     
     return all_chunks, all_metadatas, all_ids
@@ -117,7 +121,7 @@ def main():
         # Берем все файлы из agent/data/
         data_dir = Path(__file__).parent.parent / 'data'
         if not data_dir.exists():
-            print(f"✗ Директория {data_dir} не найдена!")
+            print(f"[ERROR] Директория {data_dir} не найдена!")
             print(f"Создайте папку agent/data/ и поместите туда документы")
             sys.exit(1)
         
@@ -127,7 +131,7 @@ def main():
         ]
     
     if not file_paths:
-        print("✗ Не найдено файлов для обработки!")
+        print("[ERROR] Не найдено файлов для обработки!")
         sys.exit(1)
     
     print(f"Файлов для обработки: {len(file_paths)}")
@@ -144,7 +148,7 @@ def main():
     )
     
     if not texts:
-        print("✗ Не удалось обработать ни одного документа!")
+        print("[ERROR] Не удалось обработать ни одного документа!")
         sys.exit(1)
     
     print(f"Всего чанков: {len(texts)}\n")
@@ -153,7 +157,7 @@ def main():
     try:
         settings = Settings.from_env()
     except ValueError as e:
-        print(f"✗ Ошибка настроек: {e}")
+        print(f"[ERROR] Ошибка настроек: {e}")
         print("\nУстановите OPENAI_API_KEY в переменных окружения или .env файле")
         sys.exit(1)
     
@@ -182,7 +186,7 @@ def main():
             ids=ids
         )
         
-        print("\n✓ Все документы успешно добавлены!")
+        print("\n[OK] Все документы успешно добавлены!")
         
         # Выводим статистику
         stats = vector_db.get_stats()
@@ -193,13 +197,13 @@ def main():
         print(f"Документов: {stats['document_count']}")
         print("=" * 60)
         
-        print("\n✅ ЗАГРУЗКА ЗАВЕРШЕНА!")
+        print("\n[OK] ЗАГРУЗКА ЗАВЕРШЕНА!")
         print("\nТеперь можно запустить бота:")
         print("  python main.py")
     
     except Exception as e:
         logger.error(f"Ошибка добавления документов: {e}", exc_info=True)
-        print(f"\n✗ Ошибка: {e}")
+        print(f"\n[ERROR] Ошибка: {e}")
         sys.exit(1)
 
 
