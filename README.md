@@ -1,18 +1,25 @@
-
-
 # ego-rag-agent
+
 RAG агент с поддержкой ProxyAPI
 
 ## О проекте
+
 Этот проект является форком [Toxap/agent](https://github.com/Toxap/agent) с расширенным функционалом для работы через ProxyAPI.
 
 ## Мои доработки
-- ✨ Добавлена поддержка ProxyAPI для работы с LLM-моделями
-- 🔐 Поддержка прокси через ProxyAPI
-- ⚙️ Гибкая конфигурация через переменные окружения
-- [другие доработки по мере реализации]
+
+- ✨ Добавлена поддержка ProxyAPI для работы с LLM-моделями (модуль `ai_proxyapi_processor`, streaming)
+- 🔐 Поддержка корпоративных прокси через `PROXYAPI_PROXY_URL`
+- ⚙️ Гибкая конфигурация через переменные окружения (OpenAI, GigaChat, ProxyAPI)
+- 🧠 Локальные эмбеддинги через `sentence-transformers` — `OPENAI_API_KEY` не обязателен при GigaChat/ProxyAPI
+- 📥 Индексация документов без Telegram и ключей LLM (`Settings.from_env_for_ingest`)
+- 🧪 Автотесты конфигурации и VectorDB (10 тестов, `pytest`)
+- 🛡️ Усилен `.gitignore` и скрипт проверки перед push (`scripts/check_before_push.ps1`)
+- 📝 Документация: `REPORT.md`, `SECURITY.md`, `CHANGELOG.md`, `.env.example`
+- 🪟 Исправлен запуск на Windows (UTF-8 в консоли для `main.py`)
 
 ## Оригинальный проект
+
 Основан на проекте [agent by Toxap](https://github.com/Toxap/agent).
 
 ---
@@ -20,6 +27,7 @@ RAG агент с поддержкой ProxyAPI
 ## Установка
 
 **Первый раз:**
+
 ```bash
 # Активация виртуального окружения
 .\.venv\Scripts\Activate.ps1
@@ -30,11 +38,13 @@ pip install -r requirements.txt
 
 **Создание .env файла:**
 Скопируйте `.env.example` в `.env` и заполните необходимыми ключами:
+
 ```bash
 Copy-Item .env.example .env
 # Или на Linux/Mac:
 # cp .env.example .env
 ```
+
 Затем отредактируйте `.env` и вставьте свои токены.
 
 ## Запуск
@@ -172,6 +182,7 @@ setup_logging(level="DEBUG")  # DEBUG, INFO, WARNING, ERROR
 ### О ProxyAPI
 
 **ProxyAPI** (`https://api.proxyapi.ru`) — это универсальный прокси-сервис, который:
+
 - Предоставляет доступ к API ведущих AI-провайдеров (OpenAI, Anthropic, Gemini)
 - Выступает посредником: запросы отправляются через серверы в Европе
 - Не требует создания аккаунтов в сторонних системах — управление через личный кабинет ProxyAPI
@@ -180,10 +191,9 @@ setup_logging(level="DEBUG")  # DEBUG, INFO, WARNING, ERROR
 ### Настройка ProxyAPI
 
 1. **Получите ключ API:**
-   - Зарегистрируйтесь на [console.proxyapi.ru](https://console.proxyapi.ru/)
-   - Перейдите в раздел [Ключи API](https://console.proxyapi.ru/keys)
-   - Скопируйте ключ (можно увидеть полностью только один раз при создании!)
-
+  - Зарегистрируйтесь на [console.proxyapi.ru](https://console.proxyapi.ru/)
+  - Перейдите в раздел [Ключи API](https://console.proxyapi.ru/keys)
+  - Скопируйте ключ (можно увидеть полностью только один раз при создании!)
 2. **Настройте переменные окружения:**
 
 ```env
@@ -201,13 +211,15 @@ PROXYAPI_BASE_URL=https://api.proxyapi.ru
 # PROXYAPI_PROXY_URL=http://proxy.example.com:8080
 ```
 
-3. **Структура запросов:**
+1. **Структура запросов:**
+
 ```
 https://api.proxyapi.ru/{provider}/v1
 ```
-   - OpenAI: `https://api.proxyapi.ru/openai/v1`
-   - Anthropic: `https://api.proxyapi.ru/anthropic/v1`
-   - Gemini: `https://api.proxyapi.ru/gemini/v1`
+
+- OpenAI: `https://api.proxyapi.ru/openai/v1`
+- Anthropic: `https://api.proxyapi.ru/anthropic/v1`
+- Gemini: `https://api.proxyapi.ru/gemini/v1`
 
 ### Преимущества ProxyAPI
 
@@ -220,17 +232,20 @@ https://api.proxyapi.ru/{provider}/v1
 ### Доступные модели через ProxyAPI
 
 **OpenAI модели:**
+
 - gpt-4o-mini
 - gpt-4o
 - gpt-4-turbo
 - text-embedding-3-small (для embeddings)
 
 **Anthropic модели:**
+
 - claude-3-opus
 - claude-3-sonnet
 - claude-3-haiku
 
 **Gemini модели:**
+
 - gemini-pro
 - gemini-1.5-pro
 

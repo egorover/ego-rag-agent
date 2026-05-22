@@ -45,7 +45,11 @@ class GigaChatConfig:
         auth_key = os.getenv("GIGACHAT_AUTHORIZATION_KEY")
         if not auth_key:
             raise ValueError("GIGACHAT_AUTHORIZATION_KEY не установлена")
-        
+
+        auth_key = auth_key.strip()
+        if auth_key.lower().startswith("basic "):
+            auth_key = auth_key[6:].strip()
+
         return cls(
             authorization_key=auth_key,
             model=os.getenv("GIGACHAT_MODEL", "GigaChat"),

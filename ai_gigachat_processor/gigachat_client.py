@@ -46,7 +46,9 @@ class GigaChatClient:
         """
         # Если передана конфигурация, используем её
         if config:
-            self.authorization_key = config.authorization_key
+            self.authorization_key = self._normalize_authorization_key(
+                config.authorization_key
+            )
             self.model = config.model
             self.temperature = config.temperature
             self.max_tokens = config.max_tokens
@@ -59,7 +61,7 @@ class GigaChatClient:
             # Иначе используем переданные параметры
             if not authorization_key:
                 raise ValueError("authorization_key или config должны быть указаны")
-            self.authorization_key = authorization_key
+            self.authorization_key = self._normalize_authorization_key(authorization_key)
             self.model = model
             self.temperature = temperature
             self.max_tokens = max_tokens
@@ -74,6 +76,14 @@ class GigaChatClient:
         self._token_expires_at: float = 0
         
         logger.info(f"GigaChat клиент инициализирован: модель={self.model}")
+
+    @staticmethod
+    def _normalize_authorization_key(key: str) -> str:
+        """Убирает префикс Basic — заголовок добавляется в _get_access_token."""
+        key = key.strip()
+        if key.lower().startswith("basic "):
+            return key[6:].strip()
+        return key
     
     def _get_access_token(self) -> str:
         """

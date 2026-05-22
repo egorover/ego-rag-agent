@@ -7,6 +7,10 @@ import sys
 import os
 import logging
 
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 from config import Settings
 from storage import VectorDatabase, UserDatabase
 from ai_processor import OpenAIClient
