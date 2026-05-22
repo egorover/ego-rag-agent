@@ -154,12 +154,7 @@ def main():
     print(f"Всего чанков: {len(texts)}\n")
     
     # Загружаем настройки
-    try:
-        settings = Settings.from_env()
-    except ValueError as e:
-        print(f"[ERROR] Ошибка настроек: {e}")
-        print("\nУстановите OPENAI_API_KEY в переменных окружения или .env файле")
-        sys.exit(1)
+    settings = Settings.from_env_for_ingest()
     
     # Инициализируем векторную БД
     print("=" * 60)

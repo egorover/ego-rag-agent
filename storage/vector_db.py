@@ -91,7 +91,6 @@ class VectorDatabase:
             ids = [f"doc_{i}" for i in range(len(texts))]
         
         try:
-            # Создаем эмбеддинги через OpenAI
             logger.info(f"Создание эмбеддингов для {len(texts)} документов...")
             embeddings = self._create_embeddings(texts)
             

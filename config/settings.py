@@ -20,7 +20,7 @@ class Settings:
     telegram_token: str
     
     # AI Provider (выбор: "openai", "gigachat" или "proxyapi")
-    ai_provider: str = "gigachat"
+    ai_provider: str = "proxyapi"
     
     # OpenAI
     openai_api_key: Optional[str] = None
@@ -69,24 +69,23 @@ class Settings:
             ValueError: Если обязательные переменные не установлены
         """
         telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        ai_provider = os.getenv("AI_PROVIDER", "openai").lower()
-        
+        ai_provider = os.getenv("AI_PROVIDER", "proxyapi").lower()
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        gigachat_key = None
+        proxyapi_key = None
+
         if not telegram_token:
             raise ValueError(
                 "TELEGRAM_BOT_TOKEN не установлен. "
                 "Установите переменную окружения или создайте .env файл."
             )
-        
-        # Проверяем наличие ключа для выбранного провайдера
+
         if ai_provider == "openai":
-            openai_api_key = os.getenv("OPENAI_API_KEY")
             if not openai_api_key:
                 raise ValueError(
                     "OPENAI_API_KEY не установлен. "
                     "Установите переменную окружения или создайте .env файл."
                 )
-            gigachat_key = None
-            proxyapi_key = None
         elif ai_provider == "gigachat":
             gigachat_key = os.getenv("GIGACHAT_AUTHORIZATION_KEY")
             if not gigachat_key:
@@ -94,13 +93,6 @@ class Settings:
                     "GIGACHAT_AUTHORIZATION_KEY не установлен. "
                     "Установите переменную окружения или создайте .env файл."
                 )
-            openai_api_key = os.getenv("OPENAI_API_KEY")  # Все равно нужен для embeddings
-            if not openai_api_key:
-                raise ValueError(
-                    "OPENAI_API_KEY все еще нужен для генерации embeddings. "
-                    "Установите переменную окружения или создайте .env файл."
-                )
-            proxyapi_key = None
         elif ai_provider == "proxyapi":
             proxyapi_key = os.getenv("PROXYAPI_API_KEY")
             if not proxyapi_key:
@@ -108,19 +100,12 @@ class Settings:
                     "PROXYAPI_API_KEY не установлен. "
                     "Установите переменную окружения или создайте .env файл."
                 )
-            openai_api_key = os.getenv("OPENAI_API_KEY")  # Все еще нужен для embeddings
-            if not openai_api_key:
-                raise ValueError(
-                    "OPENAI_API_KEY нужен для генерации embeddings. "
-                    "Установите переменную окружения или создайте .env файл."
-                )
-            gigachat_key = None
         else:
             raise ValueError(
                 f"Неподдерживаемый AI_PROVIDER: {ai_provider}. "
                 "Используйте 'openai', 'gigachat' или 'proxyapi'."
             )
-        
+
         return cls(
             telegram_token=telegram_token,
             ai_provider=ai_provider,
@@ -142,6 +127,28 @@ class Settings:
             proxyapi_proxy_url=os.getenv("PROXYAPI_PROXY_URL"),
             chroma_persist_dir=os.getenv("CHROMA_PERSIST_DIR", "./chroma_db"),
             chroma_collection=os.getenv("CHROMA_COLLECTION", "documents"),
+            rag_n_results=int(os.getenv("RAG_N_RESULTS", "5")),
+            chunk_size=int(os.getenv("CHUNK_SIZE", "500")),
+            chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "100")),
+            session_timeout=int(os.getenv("SESSION_TIMEOUT", "3600")),
+            max_context_messages=int(os.getenv("MAX_CONTEXT_MESSAGES", "10")),
+        )
+
+    @classmethod
+    def from_env_for_ingest(cls) -> "Settings":
+        """
+        Минимальные настройки для индексации документов.
+        Не требует Telegram-токена и ключей LLM-провайдеров.
+        Эмбеддинги создаются локально (sentence-transformers).
+        """
+        return cls(
+            telegram_token="",
+            ai_provider=os.getenv("AI_PROVIDER", "proxyapi").lower(),
+            openai_api_key=os.getenv("OPENAI_API_KEY"),
+            chroma_persist_dir=os.getenv("CHROMA_PERSIST_DIR", "./chroma_db"),
+            chroma_collection=os.getenv("CHROMA_COLLECTION", "documents"),
+            chunk_size=int(os.getenv("CHUNK_SIZE", "500")),
+            chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "100")),
         )
     
     def validate(self) -> bool:
@@ -159,19 +166,11 @@ class Settings:
         if self.ai_provider == "openai" and not self.openai_api_key:
             return False
         
-        if self.ai_provider == "gigachat":
-            if not self.gigachat_authorization_key:
-                return False
-            # OpenAI ключ все еще нужен для embeddings
-            if not self.openai_api_key:
-                return False
-        
-        if self.ai_provider == "proxyapi":
-            if not self.proxyapi_api_key:
-                return False
-            # OpenAI ключ все еще нужен для embeddings
-            if not self.openai_api_key:
-                return False
+        if self.ai_provider == "gigachat" and not self.gigachat_authorization_key:
+            return False
+
+        if self.ai_provider == "proxyapi" and not self.proxyapi_api_key:
+            return False
         
         # Проверяем числовые значения
         if self.rag_n_results <= 0 or self.chunk_size <= 0:

@@ -13,8 +13,14 @@ venv/
 env/
 ENV/
 
-# Environment variables
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets/
 
 # ChromaDB
 chroma_db/

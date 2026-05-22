@@ -6,7 +6,15 @@
 
 ## [Unreleased]
 
+### Исправлено
+- `OPENAI_API_KEY` больше не обязателен при `gigachat` / `proxyapi` (локальные эмбеддинги)
+- Индексация документов (`tools.ingest_documents`) не требует Telegram и ключей LLM
+- Удалён дублирующий импорт в `main.py`
+- Усилен `.gitignore` для секретов (`.env.*`, ключи, credentials)
+
 ### Добавлено
+- `Settings.from_env_for_ingest()` — минимальная конфигурация для индексации
+- `tests/test_storage.py` — тесты VectorDB без внешних API
 - ✨ Поддержка ProxyAPI для работы с LLM-моделями
   - Новый модуль `ai_proxyapi_processor` с полной реализацией
   - Поддержка потоковой передачи ответов (streaming)

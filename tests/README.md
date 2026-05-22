@@ -15,9 +15,14 @@ python -m unittest tests.test_config -v
 
 ## Структура тестов
 
-- `test_config.py` - тесты конфигурации
-- `test_proxyapi.py` - тесты ProxyAPI клиента (в разработке)
-- `test_storage.py` - тесты хранилищ (в разработке)
+| Файл | Описание |
+|------|----------|
+| `test_config.py` | Настройки, провайдеры, `validate()`, ingest |
+| `test_storage.py` | Локальные эмбеддинги и ChromaDB (без внешних API) |
+
+```bash
+python -m pytest tests/ -v
+```
 
 ## Добавление новых тестов
 

@@ -39,33 +39,28 @@ Copy-Item .env.example .env
 
 ## Запуск
 
-### 🚀 Windows (самый простой способ):
+### Индексация документов (первый запуск)
 
-**Первый раз - установка:**
 ```bash
-SETUP.bat
+python -m tools.ingest_documents
 ```
 
-**Индексация документов:**
-```bash
-INDEX_DATA.bat
-```
+Ключи LLM и Telegram для индексации **не требуются** — эмбеддинги создаются локально.
 
-**Запуск бота:**
-```bash
-START.bat
-```
-
-### 💻 Универсальный способ:
+### Запуск бота
 
 ```bash
-# Из папки agent/
+# Windows (PowerShell)
+.\run_bot.ps1
+
+# Или напрямую
 python main.py
 ```
 
-### 📦 Как модуль (из корня проекта):
+### Как модуль
+
 ```bash
-python -m agent
+python -m __main__
 ```
 
 ## Использование

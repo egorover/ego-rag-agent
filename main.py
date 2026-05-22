@@ -14,7 +14,7 @@ from ai_processor import ResponseGenerator as OpenAIResponseGenerator
 from ai_gigachat_processor import GigaChatClient
 from ai_gigachat_processor import ResponseGenerator as GigaChatResponseGenerator
 from ai_proxyapi_processor import ProxyAPIClient
-from ai_proxyapi_processor import ResponseGenerator as ProxyAResponseGenerator
+from ai_proxyapi_processor import ResponseGenerator as ProxyAPIResponseGenerator
 from memory_manager import PromptBuilder, ContextRetriever
 from dialog_controller import SessionManager
 from interface import TelegramBot
@@ -93,7 +93,7 @@ def initialize_components(settings: Settings):
         logger.info(f"✓ GigaChat клиент инициализирован (модель: {settings.gigachat_model})")
         
     elif settings.ai_provider == "proxyapi":
-        from ai_proxyapi_processor import ProxyAPIConfig, ResponseGenerator as ProxyAResponseGenerator
+        from ai_proxyapi_processor import ProxyAPIConfig
         
         proxyapi_config = ProxyAPIConfig(
             api_key=settings.proxyapi_api_key,
@@ -105,7 +105,7 @@ def initialize_components(settings: Settings):
         )
         
         proxyapi_client = ProxyAPIClient(config=proxyapi_config)
-        response_generator = ProxyAResponseGenerator(proxyapi_client=proxyapi_client)
+        response_generator = ProxyAPIResponseGenerator(proxyapi_client=proxyapi_client)
         logger.info(f"✓ ProxyAPI клиент инициализирован (модель: {settings.proxyapi_model})")
         
     else:
@@ -163,8 +163,9 @@ def main():
             print(f"\n❌ ОШИБКА: {e}")
             print("\n💡 Установите переменные окружения:")
             print("   TELEGRAM_BOT_TOKEN - токен Telegram бота")
-            print("   OPENAI_API_KEY - API ключ OpenAI (для embeddings)")
-            print("   PROXYAPI_API_KEY - API ключ ProxyAPI (для провайдера proxyapi)")
+            print("   OPENAI_API_KEY - API ключ OpenAI (при AI_PROVIDER=openai)")
+            print("   GIGACHAT_AUTHORIZATION_KEY - ключ GigaChat (при AI_PROVIDER=gigachat)")
+            print("   PROXYAPI_API_KEY - API ключ ProxyAPI (при AI_PROVIDER=proxyapi)")
             print("\nИли создайте файл .env с этими переменными.")
             sys.exit(1)
         

@@ -1,223 +1,250 @@
-# Отчет о проверке проекта
+# Отчёт аудита проекта ego-rag-agent
 
-**Дата:** 2024
-**Версия:** 1.1.0 (feature/proxy-api)
-**Статус:** ✅ Готов к пушу
-
----
-
-## 1. Конфликты слияния
-
-### Результат: ✅ НЕ ОБНАРУЖЕНО
-
-| Тип проверки | Результат |
-|--------------|-----------|
-| Git merge conflicts | Нет маркеров `<<<<<<<`, `=======`, `>>>>>>>` |
-| Файлы в конфликте | 0 |
+**Дата проверки:** 22 мая 2026  
+**Ветка:** `feature/proxy-api`  
+**Версия:** Unreleased (ProxyAPI + локальные эмбеддинги)  
+**Итоговый статус:** ✅ Готов к push (после коммита изменений аудита)
 
 ---
 
-## 2. Синтаксические ошибки
+## Резюме
 
-### Результат: ✅ НЕ ОБНАРУЖЕНО
+| Категория | Статус | Комментарий |
+|-----------|--------|-------------|
+| Конфликты слияния | ✅ | Маркеры `<<<<<<<` / `=======` / `>>>>>>>` не найдены |
+| Синтаксис Python | ✅ | `python -m compileall` — без ошибок |
+| Автотесты | ✅ | **10/10** пройдено (`pytest tests/`) |
+| Секреты в git | ✅ | `.env` в `.gitignore`, в индексе только `.env.example` |
+| Логические ошибки | ✅ Исправлено | См. раздел «Внесённые исправления» |
+| Документация | ✅ | README, SECURITY, CHANGELOG, tests/README обновлены |
 
-| Файл | Статус |
-|------|--------|
-| Все `.py` файлы | Компиляция успешна |
-| `main.py` | ✅ OK |
-| `config/settings.py` | ✅ OK |
-| `ai_proxyapi_processor/*` | ✅ OK |
-| Тесты | ✅ 5/5 пройдено |
+---
 
-### Запуск компиляции:
-```bash
-python -m compileall .
-# Результат: OK
+## 1. Конфликты и состояние Git
+
+```
+git status: working tree с незакоммиченными изменениями аудита
+Ветка: feature/proxy-api (чистая история, без merge-конфликтов)
 ```
 
-### Запуск тестов:
-```bash
-python -m unittest tests.test_config -v
-# Результат: Ran 5 tests in 0.470s - OK
-```
+Проверено:
+- Поиск маркеров конфликтов по всему репозиторию
+- `git diff --check` — без conflict markers
 
 ---
 
-## 3. Безопасность (секреты)
+## 2. Безопасность (секреты перед push)
 
 ### Результат: ✅ ЗАЩИЩЕНО
 
 | Проверка | Результат |
 |----------|-----------|
-| Хардкод API ключей | Не обнаружено |
-| Паттерны `sk-...` | Не обнаружено |
-| `.env` в git | ✅ Игнорируется |
-| `.venv` в git | ✅ Игнорируется |
-| `*.log` в git | ✅ Игнорируется |
-| `chroma_db/` в git | ✅ Игнорируется |
+| `.env` в git index | ❌ Не отслеживается |
+| `git check-ignore .env` | ✅ `.gitignore:17:.env` |
+| Паттерны `sk-...` в tracked файлах | ❌ Не обнаружено |
+| Хардкод реальных ключей | ❌ Только заглушки `YOUR_API_KEY_HERE` |
+| Локальный `.env` | ⚠️ Существует локально (норма), не коммитить |
 
-### Чувствительные данные:
+### Усилен `.gitignore`
 
-| Файл | Содержит | Статус |
-|------|----------|--------|
-| `.env` | Реальные ключи | ⚠️ Локально, не в git |
-| `.env.example` | Заглушки | ✅ Безопасно для пуша |
-| `ai_proxyapi_processor/config.py` | `"YOUR_API_KEY_HERE"` | ✅ Безопасно (заглушки) |
+```
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets/
+```
+
+### Обязательные секреты (по провайдеру)
+
+| Переменная | Когда обязательна |
+|------------|-------------------|
+| `TELEGRAM_BOT_TOKEN` | Запуск бота (`main.py`) |
+| `PROXYAPI_API_KEY` | `AI_PROVIDER=proxyapi` |
+| `GIGACHAT_AUTHORIZATION_KEY` | `AI_PROVIDER=gigachat` |
+| `OPENAI_API_KEY` | `AI_PROVIDER=openai` |
+
+**Важно:** эмбеддинги RAG создаются **локально** (`sentence-transformers`, модель `all-MiniLM-L6-v2`). `OPENAI_API_KEY` **не обязателен** при `proxyapi` и `gigachat`.
+
+### Скрипт проверки перед push
+
+```powershell
+.\scripts\check_before_push.ps1
+```
+
+Проверяет: конфликты, `.env` в git, подозрительные ключи, синтаксис, тесты.
 
 ---
 
-## 4. Структура проекта
+## 3. Внесённые исправления
 
-### Созданные файлы:
+### 3.1. `config/settings.py`
 
-| Файл | Описание | Статус |
-|------|----------|--------|
-| `ai_proxyapi_processor/__init__.py` | Экспорт модуля | ✅ |
-| `ai_proxyapi_processor/config.py` | Конфигурация ProxyAPI | ✅ |
-| `ai_proxyapi_processor/proxyapi_client.py` | Клиент API | ✅ |
-| `ai_proxyapi_processor/response_generator.py` | Генератор ответов | ✅ |
-| `.env.example` | Шаблон конфигурации | ✅ |
-| `CHANGELOG.md` | История изменений | ✅ |
-| `CONTRIBUTING.md` | Руководство разработчика | ✅ |
-| `SECURITY.md` | Политика безопасности | ✅ |
-| `tests/__init__.py` | Тесты | ✅ |
-| `tests/test_config.py` | Тесты конфигурации | ✅ |
-| `tests/README.md` | Документация тестов | ✅ |
+- Убрано обязательное требование `OPENAI_API_KEY` для `gigachat` и `proxyapi`
+- Добавлен `Settings.from_env_for_ingest()` — индексация без Telegram и LLM-ключей
+- `from_env()` читает `CHUNK_SIZE`, `CHUNK_OVERLAP`, `RAG_N_RESULTS` и др. из окружения
+- Согласован дефолт `AI_PROVIDER=proxyapi`
 
-### Обновлённые файлы:
+### 3.2. `tools/ingest_documents.py`
 
-| Файл | Изменения |
+- Использует `from_env_for_ingest()` вместо полного `from_env()`
+- Индексация возможна без `.env` с Telegram-токеном
+
+### 3.3. `main.py`
+
+- Устранён дублирующий импорт `ResponseGenerator`
+- Уточнены сообщения об обязательных переменных
+
+### 3.4. `storage/vector_db.py`
+
+- Удалён устаревший комментарий про OpenAI-эмбеддинги
+
+### 3.5. Тесты
+
+| Файл | Тестов | Назначение |
+|------|--------|------------|
+| `tests/test_config.py` | 9 | Провайдеры, ingest, validate |
+| `tests/test_storage.py` | 1 | ChromaDB + локальные эмбеддинги |
+
+Тесты изолированы от локального `.env` (`patch.dict(..., clear=True)`).
+
+### 3.6. Документация
+
+- `README.md` — актуальные команды запуска (убраны несуществующие `.bat`)
+- `SECURITY.md`, `.env.example` — корректные требования к ключам
+- `CHANGELOG.md` — записи об исправлениях
+- `tests/README.md` — актуальная структура тестов
+
+---
+
+## 4. Результаты тестирования
+
+### 4.1. Автотесты
+
+```bash
+python -m pytest tests/ -v
+# 10 passed in ~2s
+```
+
+| Тест | Результат |
 |------|-----------|
-| `config/settings.py` | + ProxyAPI настройки |
-| `main.py` | + Инициализация ProxyAPI |
-| `.env.example` | + ProxyAPI переменные |
-| `README.md` | + Раздел ProxyAPI |
-| `requirements.txt` | + `requests` |
+| `test_settings_proxyapi_without_openai` | ✅ |
+| `test_settings_proxyapi_with_optional_openai` | ✅ |
+| `test_settings_gigachat_without_openai` | ✅ |
+| `test_settings_openai_provider` | ✅ |
+| `test_settings_missing_provider_keys` | ✅ |
+| `test_settings_from_env_for_ingest` | ✅ |
+| `test_settings_validate_proxyapi` | ✅ |
+| `test_settings_validate_invalid_chunk_overlap` | ✅ |
+| `test_proxyapi_config_from_env` | ✅ |
+| `test_create_embeddings_and_stats` | ✅ |
 
----
-
-## 5. Зависимости
-
-### Установленные пакеты:
-
-| Пакет | Версия |
-|-------|--------|
-| chromadb | 1.5.9 |
-| openai | 2.37.0 |
-| python-telegram-bot | 22.7 |
-| beautifulsoup4 | 4.14.3 |
-| python-dotenv | 1.2.2 |
-| requests | 2.34.2 |
-| numpy | 2.4.6 |
-| pydantic | 2.13.4 |
-
-### Проверка импортов:
-```bash
-python -c "from ai_proxyapi_processor import ProxyAPIClient"
-# Результат: ✅ Успешно
-```
-
----
-
-## 6. Настройки окружения
-
-### Переменные `.env.example`:
-
-```env
-# Обязательные
-TELEGRAM_BOT_TOKEN=your_token_here
-OPENAI_API_KEY=sk-your_key_here
-
-# ProxyAPI (при AI_PROVIDER=proxyapi)
-PROXYAPI_API_KEY=your_proxyapi_key_here
-PROXYAPI_MODEL=gpt-4o-mini
-PROXYAPI_BASE_URL=https://proxyapi.example.com/v1
-
-# GigaChat (при AI_PROVIDER=gigachat)
-GIGACHAT_AUTHORIZATION_KEY=your_key_here
-
-# Опционально
-AI_PROVIDER=proxyapi
-PROXYAPI_PROXY_URL=http://proxy.example.com:8080
-```
-
----
-
-## 7. Рекомендации перед пушем
-
-### ✅ Выполнено:
-
-1. Проверены конфликты слияния
-2. Проверен синтаксис Python
-3. Протестированы модули
-4. Проверены секреты
-5. Обновлён `.gitignore`
-6. Создана документация
-
-### ⚠️ Перед пушем:
-
-1. **Заполните `.env` реальными ключами** (локально, не в git)
-2. **Проверьте `.env` не добавлен в git:**
-   ```bash
-   git check-ignore .env
-   # Должно вывести: .env
-   ```
-3. **Запустите тесты:**
-   ```bash
-   python -m unittest discover tests -v
-   ```
-
----
-
-## 8. Команды для пуша
+### 4.2. Компиляция
 
 ```bash
-# Проверка статуса
-git status
+python -m compileall -q .
+# OK
+```
 
-# Добавление файлов
-git add ai_proxyapi_processor/ .env.example README.md config/settings.py main.py requirements.txt CHANGELOG.md CONTRIBUTING.md SECURITY.md tests/
+### 4.3. Импорты
 
-# Коммит
-git commit -m "feat: добавить поддержку ProxyAPI
+```bash
+python -c "from config import Settings; from ai_proxyapi_processor import ProxyAPIClient"
+# OK
+```
 
-- Новый модуль ai_proxyapi_processor
-- Конфигурация через переменные окружения
-- Поддержка прокси-серверов
-- Обновлена документация
-- Добавлены тесты"
+### 4.4. Ручная проверка (требует `.env` с реальными ключами)
 
-# Пуш
-git push origin feature/proxy-api
+| Шаг | Команда | Примечание |
+|-----|---------|------------|
+| Индексация | `python -m tools.ingest_documents` | Без Telegram |
+| Smoke-тест | `python test_bot.py` | Нужен `.env` + `chroma_db/` |
+| Запуск бота | `python main.py` | Нужен `TELEGRAM_BOT_TOKEN` + ключ провайдера |
+
+---
+
+## 5. Структура проекта
+
+```
+ego-rag-agent/
+├── config/settings.py          # Центральная конфигурация
+├── ai_processor/               # OpenAI
+├── ai_gigachat_processor/      # GigaChat
+├── ai_proxyapi_processor/      # ProxyAPI (новый)
+├── storage/vector_db.py        # ChromaDB + sentence-transformers
+├── memory_manager/             # RAG: prompt + retrieval
+├── dialog_controller/          # Сессии
+├── interface/                  # Telegram bot
+├── tools/ingest_documents.py   # Индексация data/
+├── tests/                      # 10 автотестов
+├── scripts/check_before_push.ps1
+├── .env.example                # Шаблон (безопасен для git)
+└── REPORT.md                   # Этот отчёт
 ```
 
 ---
 
-## 9. Итоговая проверка
+## 6. Зависимости
 
-| Категория | Статус | Примечание |
-|-----------|--------|------------|
-| Конфликты | ✅ OK | Нет конфликтов |
-| Синтаксис | ✅ OK | Все файлы валидны |
-| Тесты | ✅ OK | 5/5 пройдено |
-| Секреты | ✅ OK | Защищены .gitignore |
-| Документация | ✅ OK | README, CHANGELOG, SECURITY |
-| Зависимости | ✅ OK | Все установлены |
+Из `requirements.txt`:
 
----
-
-## Заключение
-
-**Проект полностью готов к пушу.**
-
-Все проверки пройдены, безопасность обеспечена, документация обновлена.
-
-### Следующие шаги:
-
-1. Заполнить `.env` реальными ключами
-2. Выполнить команды для пуша (раздел 8)
-3. Создать Pull Request в main branch
+| Пакет | Назначение |
+|-------|------------|
+| chromadb | Векторное хранилище |
+| openai | OpenAI provider |
+| python-telegram-bot | Telegram интерфейс |
+| sentence-transformers | Локальные эмбеддинги |
+| requests | ProxyAPI / GigaChat HTTP |
+| beautifulsoup4, lxml | Парсинг HTML документов |
+| python-dotenv | Загрузка `.env` |
 
 ---
 
-*Отчет сгенерирован автоматически*
+## 7. Рекомендации перед push
+
+### Обязательно
+
+1. Убедиться, что `.env` **не** в staging:
+   ```bash
+   git check-ignore -v .env
+   ```
+2. Запустить проверку:
+   ```powershell
+   .\scripts\check_before_push.ps1
+   ```
+3. Закоммитить изменения аудита (по запросу)
+
+### Не коммитить
+
+- `.env` (реальные ключи)
+- `chroma_db/`, `user_data.json`, `*.log`
+- `.venv/`
+
+### После push
+
+- Создать Pull Request в `main`
+- Проверить CI (если настроен)
+- Ротировать ключи, если они когда-либо попадали в историю git
+
+---
+
+## 8. Известные ограничения
+
+1. **ProxyAPI URL** — клиент использует `{base_url}/chat/completions`. При смене формата API ProxyAPI обновите `PROXYAPI_BASE_URL`.
+2. **GigaChat SSL** — `gigachat_verify_ssl=False` по умолчанию (разработка); в продакшене включить проверку сертификатов.
+3. **Первый запуск** — `sentence-transformers` скачивает модель (~90 MB) при первой индексации/тесте.
+4. **`test_bot.py`** — интеграционный smoke-тест, не входит в `pytest` (требует реальный `.env`).
+
+---
+
+## 9. Заключение
+
+Проект прошёл аудит конфликтов, безопасности и работоспособности. Критические несоответствия (обязательный OpenAI при локальных эмбеддингах, ingest с Telegram-токеном, устаревшая документация) **исправлены**. Автотесты расширены до 10 и проходят успешно.
+
+**Статус:** безопасно для push после коммита текущих изменений и финальной проверки `check_before_push.ps1`.
+
+---
+
+*Отчёт подготовлен по результатам автоматизированного аудита 22.05.2026*
