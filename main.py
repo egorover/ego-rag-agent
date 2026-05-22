@@ -13,6 +13,8 @@ from ai_processor import OpenAIClient
 from ai_processor import ResponseGenerator as OpenAIResponseGenerator
 from ai_gigachat_processor import GigaChatClient
 from ai_gigachat_processor import ResponseGenerator as GigaChatResponseGenerator
+from ai_proxyapi_processor import ProxyAPIClient
+from ai_proxyapi_processor import ResponseGenerator as ProxyAResponseGenerator
 from memory_manager import PromptBuilder, ContextRetriever
 from dialog_controller import SessionManager
 from interface import TelegramBot
@@ -91,7 +93,7 @@ def initialize_components(settings: Settings):
         logger.info(f"✓ GigaChat клиент инициализирован (модель: {settings.gigachat_model})")
         
     elif settings.ai_provider == "proxyapi":
-        from ai_proxyapi_processor import ProxyAPIConfig
+        from ai_proxyapi_processor import ProxyAPIConfig, ResponseGenerator as ProxyAResponseGenerator
         
         proxyapi_config = ProxyAPIConfig(
             api_key=settings.proxyapi_api_key,
@@ -103,7 +105,7 @@ def initialize_components(settings: Settings):
         )
         
         proxyapi_client = ProxyAPIClient(config=proxyapi_config)
-        response_generator = OpenAIResponseGenerator(openai_client=proxyapi_client)
+        response_generator = ProxyAResponseGenerator(proxyapi_client=proxyapi_client)
         logger.info(f"✓ ProxyAPI клиент инициализирован (модель: {settings.proxyapi_model})")
         
     else:

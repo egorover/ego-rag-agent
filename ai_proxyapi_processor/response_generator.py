@@ -43,8 +43,8 @@ class ResponseGenerator:
     def generate(
         self,
         query: str,
-        context: List[str] = None,
-        history: List[Dict[str, str]] = None,
+        context_documents: List[Dict] = None,
+        conversation_history: List[Dict] = None,
         temperature: float = None,
         max_tokens: int = None
     ) -> str:
@@ -53,15 +53,15 @@ class ResponseGenerator:
         
         Args:
             query: Вопрос пользователя
-            context: Контекст из базы знаний (опционально)
-            history: История диалога (опционально)
+            context_documents: Документы из базы знаний (опционально)
+            conversation_history: История диалога (опционально)
             temperature: Температура (опционально)
             max_tokens: Макс токены (опционально)
             
         Returns:
             Сгенерированный ответ
         """
-        messages = self._build_messages(query, context, history)
+        messages = self._build_messages(query, context_documents, conversation_history)
         
         # Генерируем ответ
         try:
@@ -78,8 +78,8 @@ class ResponseGenerator:
     def generate_streaming(
         self,
         query: str,
-        context: List[str] = None,
-        history: List[Dict[str, str]] = None,
+        context_documents: List[Dict] = None,
+        conversation_history: List[Dict] = None,
         temperature: float = None,
         max_tokens: int = None
     ):
@@ -88,15 +88,15 @@ class ResponseGenerator:
         
         Args:
             query: Вопрос пользователя
-            context: Контекст из базы знаний (опционально)
-            history: История диалога (опционально)
+            context_documents: Документы из базы знаний (опционально)
+            conversation_history: История диалога (опционально)
             temperature: Температура (опционально)
             max_tokens: Макс токены (опционально)
             
         Yields:
             Части ответа
         """
-        messages = self._build_messages(query, context, history)
+        messages = self._build_messages(query, context_documents, conversation_history)
         
         try:
             for chunk in self.proxyapi_client.generate_streaming_response(
@@ -112,16 +112,16 @@ class ResponseGenerator:
     def _build_messages(
         self,
         query: str,
-        context: List[str] = None,
-        history: List[Dict[str, str]] = None
+        context_documents: List[Dict] = None,
+        conversation_history: List[Dict] = None
     ) -> List[Dict[str, str]]:
         """
         Строит список сообщений для API.
         
         Args:
             query: Текущий вопрос пользователя
-            context: Контекст из базы знаний
-            history: История диалога
+            context_documents: Документы из базы знаний
+            conversation_history: История диалога
             
         Returns:
             Список сообщений в формате OpenAI
@@ -135,19 +135,27 @@ class ResponseGenerator:
         })
         
         # Добавляем историю диалога
-        if history:
-            for msg in history:
+        if conversation_history:
+            for msg in conversation_history:
                 messages.append({
                     "role": msg.get("role", "user"),
                     "content": msg.get("content", "")
                 })
         
         # Добавляем контекст если есть
-        if context:
-            context_text = "\n\n".join(context)
-            context_message = f"""Контекст для ответа:
+        if context_documents:
+            context_parts = []
+            for i, doc in enumerate(context_documents, 1):
+                text = doc.get('text', '')
+                source = doc.get('source', 'unknown')
+                context_parts.append(f"Источник {i} ({source}):\n{text}")
             
+            context_text = "\n\n---\n\n".join(context_parts)
+            context_message = f"""Контекст из базы знаний:
+
 {context_text}
+
+---
 
 Используй этот контекст для ответа на вопрос."""
             messages.append({
