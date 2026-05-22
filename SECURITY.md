@@ -16,10 +16,13 @@
 ### Переменные окружения
 
 Обязательные переменные:
-- `TELEGRAM_BOT_TOKEN` - токен Telegram бота
-- `OPENAI_API_KEY` - ключ OpenAI (для embeddings)
-- `PROXYAPI_API_KEY` - ключ ProxyAPI (при использовании)
-- `GIGACHAT_AUTHORIZATION_KEY` - ключ GigaChat (при использовании)
+- `TELEGRAM_BOT_TOKEN` — токен Telegram бота
+- `OPENAI_API_KEY` — ключ OpenAI (для embeddings)
+- `PROXYAPI_API_KEY` — ключ ProxyAPI (при использовании)
+  - Получить на: https://console.proxyapi.ru/keys
+  - ⚠️ Ключ можно увидеть полностью только один раз при создании!
+  - Работает только с `https://api.proxyapi.ru`
+- `GIGACHAT_AUTHORIZATION_KEY` — ключ GigaChat (при использовании)
 
 ### Рекомендации
 

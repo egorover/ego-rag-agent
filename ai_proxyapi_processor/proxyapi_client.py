@@ -23,7 +23,7 @@ class ProxyAPIClient:
         model: str = "gpt-4o-mini",
         temperature: float = 0.7,
         max_tokens: int = 1000,
-        base_url: str = "https://proxyapi.example.com/v1",
+        base_url: str = "https://api.proxyapi.ru",
         proxy_url: Optional[str] = None,
         timeout: int = 30,
         config: ProxyAPIConfig = None

@@ -19,7 +19,7 @@ class ProxyAPIConfig:
     max_tokens: int = 1000
     
     # API endpoint
-    base_url: str = "https://proxyapi.example.com/v1"
+    base_url: str = "https://api.proxyapi.ru"
     
     # Timeout для запросов (в секундах)
     timeout: int = 30
@@ -50,7 +50,7 @@ class ProxyAPIConfig:
             model=os.getenv("PROXYAPI_MODEL", "gpt-4o-mini"),
             temperature=float(os.getenv("PROXYAPI_TEMPERATURE", "0.7")),
             max_tokens=int(os.getenv("PROXYAPI_MAX_TOKENS", "1000")),
-            base_url=os.getenv("PROXYAPI_BASE_URL", "https://proxyapi.example.com/v1"),
+            base_url=os.getenv("PROXYAPI_BASE_URL", "https://api.proxyapi.ru"),
             proxy_url=os.getenv("PROXYAPI_PROXY_URL"),
         )
 

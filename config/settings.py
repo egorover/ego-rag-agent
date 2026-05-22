@@ -41,7 +41,7 @@ class Settings:
     proxyapi_model: str = "gpt-4o-mini"
     proxyapi_temperature: float = 0.7
     proxyapi_max_tokens: int = 1000
-    proxyapi_base_url: str = "https://proxyapi.example.com/v1"
+    proxyapi_base_url: str = "https://api.proxyapi.ru"
     proxyapi_proxy_url: Optional[str] = None
     
     # ChromaDB
@@ -138,7 +138,7 @@ class Settings:
             proxyapi_model=os.getenv("PROXYAPI_MODEL", "gpt-4o-mini"),
             proxyapi_temperature=float(os.getenv("PROXYAPI_TEMPERATURE", "0.7")),
             proxyapi_max_tokens=int(os.getenv("PROXYAPI_MAX_TOKENS", "1000")),
-            proxyapi_base_url=os.getenv("PROXYAPI_BASE_URL", "https://proxyapi.example.com/v1"),
+            proxyapi_base_url=os.getenv("PROXYAPI_BASE_URL", "https://api.proxyapi.ru"),
             proxyapi_proxy_url=os.getenv("PROXYAPI_PROXY_URL"),
             chroma_persist_dir=os.getenv("CHROMA_PERSIST_DIR", "./chroma_db"),
             chroma_collection=os.getenv("CHROMA_COLLECTION", "documents"),

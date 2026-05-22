@@ -172,12 +172,24 @@ setup_logging(level="DEBUG")  # DEBUG, INFO, WARNING, ERROR
 
 ## Поддержка ProxyAPI
 
-Проект поддерживает работу через ProxyAPI — прокси-слой для доступа к различным LLM-моделям.
+Проект поддерживает работу через **ProxyAPI** — российское решение для доступа к AI-моделям (OpenAI, Anthropic, Gemini) через единую точку входа.
+
+### О ProxyAPI
+
+**ProxyAPI** (`https://api.proxyapi.ru`) — это универсальный прокси-сервис, который:
+- Предоставляет доступ к API ведущих AI-провайдеров (OpenAI, Anthropic, Gemini)
+- Выступает посредником: запросы отправляются через серверы в Европе
+- Не требует создания аккаунтов в сторонних системах — управление через личный кабинет ProxyAPI
+- Централизует оплату и управление ключами
 
 ### Настройка ProxyAPI
 
-1. Установите `AI_PROVIDER=proxyapi` в `.env`
-2. Добавьте свои настройки:
+1. **Получите ключ API:**
+   - Зарегистрируйтесь на [console.proxyapi.ru](https://console.proxyapi.ru/)
+   - Перейдите в раздел [Ключи API](https://console.proxyapi.ru/keys)
+   - Скопируйте ключ (можно увидеть полностью только один раз при создании!)
+
+2. **Настройте переменные окружения:**
 
 ```env
 # Выбор провайдера
@@ -188,23 +200,51 @@ PROXYAPI_API_KEY=your_api_key_here
 PROXYAPI_MODEL=gpt-4o-mini
 PROXYAPI_TEMPERATURE=0.7
 PROXYAPI_MAX_TOKENS=1000
-PROXYAPI_BASE_URL=https://proxyapi.example.com/v1
+PROXYAPI_BASE_URL=https://api.proxyapi.ru
 
 # Опционально: прокси для ProxyAPI
-PROXYAPI_PROXY_URL=http://proxy.example.com:8080
+# PROXYAPI_PROXY_URL=http://proxy.example.com:8080
 ```
+
+3. **Структура запросов:**
+```
+https://api.proxyapi.ru/{provider}/v1
+```
+   - OpenAI: `https://api.proxyapi.ru/openai/v1`
+   - Anthropic: `https://api.proxyapi.ru/anthropic/v1`
+   - Gemini: `https://api.proxyapi.ru/gemini/v1`
 
 ### Преимущества ProxyAPI
 
 - 🔒 **Безопасность** — централизованное управление ключами
-- 🔄 **Гибкость** — легкое переключение между моделями
+- 🔄 **Гибкость** — легкое переключение между моделями и провайдерами
 - 🌐 **Прокси** — поддержка корпоративных прокси-серверов
-- ⚡ **Производительность** — кэширование и оптимизация запросов
+- ⚡ **Производительность** — оптимизированные запросы
+- 💰 **Оплата** — единая система оплаты через личный кабинет
 
 ### Доступные модели через ProxyAPI
 
+**OpenAI модели:**
 - gpt-4o-mini
 - gpt-4o
 - gpt-4-turbo
-- И другие (зависит от конфигурации ProxyAPI)
+- text-embedding-3-small (для embeddings)
+
+**Anthropic модели:**
+- claude-3-opus
+- claude-3-sonnet
+- claude-3-haiku
+
+**Gemini модели:**
+- gemini-pro
+- gemini-1.5-pro
+
+*Доступность моделей зависит от вашего тарифа и конфигурации ProxyAPI*
+
+### Важные замечания
+
+1. **Ключ ProxyAPI** работает только при отправке запросов на `https://api.proxyapi.ru`
+2. При прямом обращении к провайдеру (OpenAI, Anthropic, Gemini) ключ ProxyAPI работать не будет
+3. Для работы с ProxyAPI **не требуются** аккаунты у внешних провайдеров
+4. Ключ можно увидеть полностью только **один раз** при создании — сохраните его надежно!
 
