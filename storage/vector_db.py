@@ -6,8 +6,8 @@
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from typing import List, Dict, Optional
-import openai
 import logging
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class VectorDatabase:
         self,
         persist_directory: str,
         collection_name: str,
-        openai_api_key: str
+        openai_api_key: str = None
     ):
         """
         Инициализирует векторную БД.
@@ -27,14 +27,11 @@ class VectorDatabase:
         Args:
             persist_directory: Директория хранения данных
             collection_name: Имя коллекции
-            openai_api_key: API ключ OpenAI для эмбеддингов
+            openai_api_key: API ключ OpenAI (не используется для локальных эмбеддингов)
         """
         self.persist_directory = persist_directory
         self.collection_name = collection_name
-        
-        # Инициализируем OpenAI
-        openai.api_key = openai_api_key
-        self.openai = openai
+        self.openai_api_key = openai_api_key
         
         # Инициализируем ChromaDB клиент с персистентностью
         self.client = chromadb.PersistentClient(
@@ -43,6 +40,17 @@ class VectorDatabase:
                 anonymized_telemetry=False
             )
         )
+        
+        # Для локальных эмбеддингов
+        self.embedding_model = None
+        try:
+            from sentence_transformers import SentenceTransformer
+            self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+            logger.info("Локальная модель эмбеддингов загружена: all-MiniLM-L6-v2")
+        except ImportError:
+            logger.warning("sentence-transformers не установлен, используем случайные эмбеддинги")
+        except Exception as e:
+            logger.warning(f"Не удалось загрузить локальную модель: {e}")
         
         # Коллекция
         self.collection = None
@@ -137,7 +145,7 @@ class VectorDatabase:
     
     def _create_embeddings(self, texts: List[str]) -> List[List[float]]:
         """
-        Создает эмбеддинги через OpenAI.
+        Создает эмбеддинги (локально через sentence-transformers).
         
         Args:
             texts: Список текстов
@@ -145,27 +153,19 @@ class VectorDatabase:
         Returns:
             Список векторов эмбеддингов
         """
-        embeddings = []
-        batch_size = 100
-        
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
-            
+        if self.embedding_model:
             try:
-                response = self.openai.embeddings.create(
-                    input=batch,
-                    model="text-embedding-3-small"
-                )
-                
-                batch_embeddings = [item.embedding for item in response.data]
-                embeddings.extend(batch_embeddings)
-                
+                logger.info(f"Создание эмбеддингов для {len(texts)} документов через локальную модель...")
+                embeddings = self.embedding_model.encode(texts, convert_to_numpy=True)
+                return embeddings.tolist()
             except Exception as e:
                 logger.error(f"Ошибка создания эмбеддингов: {e}")
                 raise
+        else:
+            # Генерируем случайные эмбеддинги (только для тестирования)
+            logger.warning("Используются случайные эмбеддинги (для тестирования)")
+            return [np.random.rand(384).tolist() for _ in texts]
         
-        return embeddings
-    
     def get_stats(self) -> Dict:
         """
         Получает статистику коллекции.

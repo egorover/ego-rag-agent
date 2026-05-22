@@ -17,6 +17,9 @@ python-dotenv>=1.0.0
 # HTTP запросы
 requests>=2.31.0
 
+# Локальные эмбеддинги
+sentence-transformers>=5.0.0
+
 # Telegram Bot
 python-telegram-bot>=20.7
 
