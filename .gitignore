@@ -17,6 +17,8 @@ ENV/
 .env
 .env.*
 !.env.example
+.env.local
+.env.production
 *.pem
 *.key
 credentials.json
@@ -42,4 +44,8 @@ user_data.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Security scan reports (optional - keep local)
+# security_report*.md  # Отключено - SECURITY_REPORT.md нужен в репозитории
+*.scan
 
