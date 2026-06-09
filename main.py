@@ -148,6 +148,7 @@ def _init_proxyapi(settings: Settings):
 
 
 def _init_memory_manager(
+    settings: Settings,
     vector_db: VectorDatabase,
     response_generator
 ) -> Tuple[PromptBuilder, ContextRetriever]:
@@ -155,6 +156,7 @@ def _init_memory_manager(
     Инициализирует менеджер памяти.
     
     Args:
+        settings: Настройки приложения
         vector_db: Векторная база данных
         response_generator: Генератор ответов
         
@@ -246,7 +248,7 @@ def initialize_components(settings: Settings):
     _, response_generator = _init_ai_provider(settings)
     
     # 3. Memory Manager
-    _, context_retriever = _init_memory_manager(vector_db, response_generator)
+    _, context_retriever = _init_memory_manager(settings, vector_db, response_generator)
     
     # 4. Dialog Controller
     session_manager = _init_dialog_controller(settings)
