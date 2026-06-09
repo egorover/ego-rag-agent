@@ -2,7 +2,7 @@
 Конфигурация для ProxyAPI клиента.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from config.base_config import BaseAIConfig
@@ -12,8 +12,9 @@ from config.base_config import BaseAIConfig
 class ProxyAPIConfig(BaseAIConfig):
     """Конфигурация для ProxyAPI."""
     
-    # Аутентификация
-    api_key: str
+    # Аутентификация (обязательный параметр)
+    # Используем field(default_factory) чтобы обойти ограничение dataclass
+    api_key: str = field(default="")  # Пустой дефолт, проверяется в from_env
     
     # API endpoint
     base_url: str = "https://api.proxyapi.ru"
@@ -44,8 +45,8 @@ class ProxyAPIConfig(BaseAIConfig):
             model=os.getenv("PROXYAPI_MODEL", cls.model),
             temperature=cls._get_env_float("PROXYAPI_TEMPERATURE", cls.temperature),
             max_tokens=cls._get_env_int("PROXYAPI_MAX_TOKENS", cls.max_tokens),
+            timeout=cls._get_env_int("PROXYAPI_TIMEOUT", cls.timeout),
             base_url=os.getenv("PROXYAPI_BASE_URL", cls.base_url),
             proxy_url=os.getenv("PROXYAPI_PROXY_URL"),
-            timeout=cls._get_env_int("PROXYAPI_TIMEOUT", cls.timeout),
         )
 

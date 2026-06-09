@@ -2,7 +2,7 @@
 Конфигурация для GigaChat клиента.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from config.base_config import BaseAIConfig
@@ -12,15 +12,13 @@ from config.base_config import BaseAIConfig
 class GigaChatConfig(BaseAIConfig):
     """Конфигурация для GigaChat API."""
     
-    # Аутентификация
-    authorization_key: str
-    scope: str = "GIGACHAT_API_PERS"
+    # Аутентификация (обязательный параметр)
+    authorization_key: str = field(default="")  # Пустой дефолт, проверяется в from_env
     
-    # API endpoints
+    # Дополнительные поля GigaChat
+    scope: str = "GIGACHAT_API_PERS"
     oauth_url: str = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
     api_base_url: str = "https://gigachat.devices.sberbank.ru/api/v1"
-    
-    # SSL верификация
     verify_ssl: bool = True
     
     @classmethod
