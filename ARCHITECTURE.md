@@ -35,33 +35,33 @@ Ego-RAG-Agent — Telegram-бот с Retrieval-Augmented Generation (RAG) для
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Telegram Bot                              │
-│                     (interface/telegram_bot.py)                  │
+│                        Telegram Bot                             │
+│                     (interface/telegram_bot.py)                 │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                     BotHandlers                                  │
-│                   (interface/handlers.py)                        │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │  /start     │  │  /help      │  │  /stats     │             │
-│  │  /clear     │  │  message    │  │             │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
+│                     BotHandlers                                 │
+│                   (interface/handlers.py)                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │  /start     │  │  /help      │  │  /stats     │              │
+│  │  /clear     │  │  message    │  │             │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
               ┌─────────────┼─────────────┐
               │             │             │
               ▼             ▼             ▼
-┌──────────────────┐ ┌──────────────┐ ┌──────────────────┐
-│ SessionManager   │ │ContextRetriever│ │ResponseGenerator│
-│ (dialog_control- │ │(memory_mana-   │ │(ai_*/response_  │
-│ ler/session_     │ │ ger/)         │ │ generator.py)   │
-│ manager.py)      │ │              │ │                  │
-└──────────────────┘ └──────┬───────┘ └────────┬─────────┘
+┌──────────────────┐ ┌──────────────  ┐ ┌──────────────────┐
+│ SessionManager   │ │ContextRetriever│ │ResponseGenerator │
+│ (dialog_control- │ │(memory_mana-   │ │(ai_*/response_   │
+│ ler/session_     │ │ ger/)          │ │ generator.py)    │
+│ manager.py)      │ │                │ │                  │
+└──────────────────┘ └──────┬───────  ┘ └────────┬─────────┘
                             │                  │
                             ▼                  ▼
                    ┌────────────────┐  ┌─────────────────┐
-                   │  VectorDatabase │  │  AIClient       │
+                   │  VectorDatabase│  │  AIClient       │
                    │  (storage/)    │  │  (ai_*/client)  │
                    └────────────────┘  └─────────────────┘
                             │                  │
