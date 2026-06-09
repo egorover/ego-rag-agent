@@ -5,24 +5,18 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from config.base_config import BaseAIConfig
+
 
 @dataclass
-class ProxyAPIConfig:
+class ProxyAPIConfig(BaseAIConfig):
     """Конфигурация для ProxyAPI."""
     
     # Аутентификация
     api_key: str
     
-    # Параметры модели
-    model: str = "gpt-4o-mini"
-    temperature: float = 0.7
-    max_tokens: int = 1000
-    
     # API endpoint
     base_url: str = "https://api.proxyapi.ru"
-    
-    # Timeout для запросов (в секундах)
-    timeout: int = 30
     
     # Прокси настройки (опционально)
     proxy_url: Optional[str] = None
@@ -38,19 +32,20 @@ class ProxyAPIConfig:
         - PROXYAPI_TEMPERATURE: температура (опционально)
         - PROXYAPI_MAX_TOKENS: макс токены (опционально)
         - PROXYAPI_BASE_URL: базовый URL (опционально)
+        - PROXYAPI_PROXY_URL: URL прокси (опционально)
+        - PROXYAPI_TIMEOUT: timeout (опционально)
         """
-        import os
-        
         api_key = os.getenv("PROXYAPI_API_KEY")
         if not api_key:
             raise ValueError("PROXYAPI_API_KEY не установлена")
         
         return cls(
             api_key=api_key,
-            model=os.getenv("PROXYAPI_MODEL", "gpt-4o-mini"),
-            temperature=float(os.getenv("PROXYAPI_TEMPERATURE", "0.7")),
-            max_tokens=int(os.getenv("PROXYAPI_MAX_TOKENS", "1000")),
-            base_url=os.getenv("PROXYAPI_BASE_URL", "https://api.proxyapi.ru"),
+            model=os.getenv("PROXYAPI_MODEL", cls.model),
+            temperature=cls._get_env_float("PROXYAPI_TEMPERATURE", cls.temperature),
+            max_tokens=cls._get_env_int("PROXYAPI_MAX_TOKENS", cls.max_tokens),
+            base_url=os.getenv("PROXYAPI_BASE_URL", cls.base_url),
             proxy_url=os.getenv("PROXYAPI_PROXY_URL"),
+            timeout=cls._get_env_int("PROXYAPI_TIMEOUT", cls.timeout),
         )
 

@@ -5,19 +5,16 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from config.base_config import BaseAIConfig
+
 
 @dataclass
-class GigaChatConfig:
+class GigaChatConfig(BaseAIConfig):
     """Конфигурация для GigaChat API."""
     
     # Аутентификация
     authorization_key: str
     scope: str = "GIGACHAT_API_PERS"
-    
-    # Параметры модели
-    model: str = "GigaChat"  # GigaChat, GigaChat-Pro, GigaChat-Plus
-    temperature: float = 0.7
-    max_tokens: int = 1000
     
     # API endpoints
     oauth_url: str = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
@@ -25,9 +22,6 @@ class GigaChatConfig:
     
     # SSL верификация
     verify_ssl: bool = True
-    
-    # Timeout для запросов (в секундах)
-    timeout: int = 30
     
     @classmethod
     def from_env(cls) -> "GigaChatConfig":
@@ -39,9 +33,9 @@ class GigaChatConfig:
         - GIGACHAT_MODEL: модель (опционально)
         - GIGACHAT_TEMPERATURE: температура (опционально)
         - GIGACHAT_MAX_TOKENS: макс токены (опционально)
+        - GIGACHAT_TIMEOUT: timeout (опционально)
+        - GIGACHAT_SCOPE: область доступа (опционально)
         """
-        import os
-        
         auth_key = os.getenv("GIGACHAT_AUTHORIZATION_KEY")
         if not auth_key:
             raise ValueError("GIGACHAT_AUTHORIZATION_KEY не установлена")
@@ -52,9 +46,11 @@ class GigaChatConfig:
 
         return cls(
             authorization_key=auth_key,
-            model=os.getenv("GIGACHAT_MODEL", "GigaChat"),
-            temperature=float(os.getenv("GIGACHAT_TEMPERATURE", "0.7")),
-            max_tokens=int(os.getenv("GIGACHAT_MAX_TOKENS", "1000"))
+            model=os.getenv("GIGACHAT_MODEL", cls.model),
+            temperature=cls._get_env_float("GIGACHAT_TEMPERATURE", cls.temperature),
+            max_tokens=cls._get_env_int("GIGACHAT_MAX_TOKENS", cls.max_tokens),
+            timeout=cls._get_env_int("GIGACHAT_TIMEOUT", cls.timeout),
+            scope=os.getenv("GIGACHAT_SCOPE", cls.scope),
         )
 
 
