@@ -54,37 +54,3 @@ class ProxyAPIConfig:
             proxy_url=os.getenv("PROXYAPI_PROXY_URL"),
         )
 
-
-# Предустановленные конфигурации
-
-# Конфигурация для базовой модели
-PROXYAPI_BASE_CONFIG = ProxyAPIConfig(
-    api_key="YOUR_API_KEY_HERE",
-    model="gpt-4o-mini",
-    temperature=0.7,
-    max_tokens=1000
-)
-
-# Конфигурация для продвинутой модели
-PROXYAPI_ADVANCED_CONFIG = ProxyAPIConfig(
-    api_key="YOUR_API_KEY_HERE",
-    model="gpt-4-turbo",
-    temperature=0.7,
-    max_tokens=2000
-)
-
-# Конфигурация для креативных задач
-PROXYAPI_CREATIVE_CONFIG = ProxyAPIConfig(
-    api_key="YOUR_API_KEY_HERE",
-    model="gpt-4o",
-    temperature=1.2,
-    max_tokens=2000
-)
-
-# Конфигурация для точных ответов
-PROXYAPI_PRECISE_CONFIG = ProxyAPIConfig(
-    api_key="YOUR_API_KEY_HERE",
-    model="gpt-4o-mini",
-    temperature=0.3,
-    max_tokens=1000
-)
