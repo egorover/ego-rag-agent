@@ -4,35 +4,32 @@
 
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
-
-### Исправлено
-- `OPENAI_API_KEY` больше не обязателен при `gigachat` / `proxyapi` (локальные эмбеддинги)
-- Индексация документов (`tools.ingest_documents`) не требует Telegram и ключей LLM
-- Удалён дублирующий импорт в `main.py`
-- Усилен `.gitignore` для секретов (`.env.*`, ключи, credentials)
+## [Unreleased] - 2026-06-09
 
 ### Добавлено
-- `Settings.from_env_for_ingest()` — минимальная конфигурация для индексации
-- `tests/test_storage.py` — тесты VectorDB без внешних API
-- ✨ Поддержка ProxyAPI для работы с LLM-моделями
-  - Новый модуль `ai_proxyapi_processor` с полной реализацией
-  - Поддержка потоковой передачи ответов (streaming)
-  - Конфигурация через переменные окружения
-  - Поддержка корпоративных прокси-серверов
-- 🔐 Добавлен `.env.example` как шаблон для конфигурации
-- 📝 Обновлена документация с разделом о ProxyAPI
+- 🏗️ **Полный рефакторинг технического долга** (2026.06.08-06.09)
+  - Создан `BaseAIConfig` — базовый класс для AI-конфигов (устранено дублирование)
+  - Создан `BaseResponseGenerator` — единая логика построения сообщений для всех провайдеров
+  - Удалено 71 строка дублирующего кода из `PromptBuilder`
+  - `main.py` разбит на 6 маленьких функций для лучшей читаемости
+- 📄 **Новая документация**
+  - `ARCHITECTURE.md` — детальная документация архитектуры с диаграммами
+  - Обновлены `AUDIT_REPORT.md` и `SECURITY_REPORT.md`
+- ✅ Исправлен критический баг: добавлен `get_sources()` в `ContextRetriever`
 
 ### Изменено
-- Обновлен `AI_PROVIDER` по умолчанию на `proxyapi`
-- Добавлена поддержка нового провайдера в `config/settings.py`
-- Обновлен `main.py` для инициализации ProxyAPI клиента
-- Добавлена зависимость `requests` в `requirements.txt`
+- Обновлен `AUDIT_REPORT.md` — оценка повышена до 4.6/5.0
+- Обновлен `SECURITY_REPORT.md` — оценка повышена до 3.5/5.0
+- Перемещен блок БЕЗОПАСНОСТЬ в README после раздела "Оригинальный проект"
 
-### Улучшения
-- Централизованное управление ключами через ProxyAPI
-- Гибкое переключение между моделями
-- Поддержка корпоративных прокси-серверов
+### Исправлено
+- `get_sources()` метод теперь существует в `ContextRetriever` (было AttributeError)
+- Dataclass field order в `ProxyAPIConfig` и `GigaChatConfig` (неверный порядок полей)
+- `settings` не передавался в `_init_memory_manager()` (NameError)
+
+### Удалено
+- Метод `build_messages_for_ai()` из `PromptBuilder` (дублировал логику в `BaseResponseGenerator`)
+- Предустановленные конфигурации в `ai_*_processor/config.py`
 
 ---
 
