@@ -55,6 +55,12 @@ Ego-Rag-Agent — это мультимодальный RAG-агент с под
 - 🛡️ Усилен `.gitignore` и скрипт проверки перед push (`scripts/check_before_push.ps1`)
 - 📝 Документация: `REPORT.md`, `SECURITY.md`, `CHANGELOG.md`, `.env.example`
 - 🪟 Исправлен запуск на Windows (UTF-8 в консоли для `main.py`)
+- 🏗️ **Рефакторинг (2026.06.08-06.09):**
+  - Создан `BaseAIConfig` — устранено дублирование конфигов
+  - Создан `BaseResponseGenerator` — единая логика построения сообщений
+  - Упрощен `main.py` — разбит на 6 подфункций
+  - Добавлен `ARCHITECTURE.md` — детальная документация архитектуры
+  - Исправлен критический баг `get_sources()` в `ContextRetriever`
 
 ## Параметры RAG
 
@@ -139,9 +145,13 @@ agent/
 ├── main.py                      # Точка входа
 ├── requirements.txt             # Зависимости
 ├── README.md                    # Документация
+├── ARCHITECTURE.md              # Архитектура системы
+├── AUDIT_REPORT.md              # Аудит проекта
+├── SECURITY_REPORT.md           # Отчет по безопасности
 │
 ├── config/                      # Конфигурация
 │   ├── __init__.py
+│   ├── base_config.py          # BaseAIConfig (базовый класс)
 │   └── settings.py              # Настройки приложения
 │
 ├── interface/                   # 1. Интерфейс
@@ -156,19 +166,40 @@ agent/
 │
 ├── memory_manager/              # 3. Менеджер памяти
 │   ├── __init__.py
-│   ├── prompt_builder.py
-│   └── context_retriever.py
+│   ├── prompt_builder.py       # Утилиты для контекста
+│   ├── context_retriever.py    # Поиск в векторной БД
+│   └── response_generator.py   # BaseResponseGenerator
 │
-├── ai_processor/                # 4. Обработка через ИИ
+├── ai_processor/                # 4. OpenAI провайдер
 │   ├── __init__.py
 │   ├── openai_client.py
 │   └── response_generator.py
 │
-├── storage/                     # 5. Хранилище данных
+├── ai_gigachat_processor/       # 5. GigaChat провайдер
+│   ├── __init__.py
+│   ├── config.py               # GigaChatConfig
+│   ├── gigachat_client.py
+│   └── response_generator.py
+│
+├── ai_proxyapi_processor/       # 6. ProxyAPI провайдер
+│   ├── __init__.py
+│   ├── config.py               # ProxyAPIConfig
+│   ├── proxyapi_client.py
+│   └── response_generator.py
+│
+├── storage/                     # 7. Хранилище данных
 │   ├── __init__.py
 │   ├── vector_db.py
 │   ├── user_db.py
 │   └── document_loader.py
+│
+├── tools/                       # Утилиты
+│   ├── __init__.py
+│   └── ingest_documents.py
+│
+├── tests/                       # Тесты
+│   ├── test_config.py
+│   └── test_storage.py
 │
 └── utils/                       # Утилиты
     ├── __init__.py
