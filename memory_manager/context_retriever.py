@@ -86,3 +86,24 @@ class ContextRetriever:
             logger.error(f"Ошибка получения контекста: {e}")
             return []
     
+    def get_sources(self, documents: List[Dict]) -> List[str]:
+        """
+        Извлекает уникальные источники из документов.
+
+        Args:
+            documents: Список документов с метаданными
+            
+        Returns:
+            Список уникальных источников (путей к файлам)
+        """
+        if not documents:
+            return []
+        
+        sources = set()
+        for doc in documents:
+            source = doc.get('source', 'unknown')
+            if source and source != 'unknown':
+                sources.add(source)
+        
+        return list(sources)
+    
