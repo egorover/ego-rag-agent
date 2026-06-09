@@ -6,6 +6,7 @@
 import sys
 import os
 import logging
+from typing import Tuple
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
@@ -24,14 +25,15 @@ from dialog_controller import SessionManager
 from interface import TelegramBot
 from utils import setup_logging
 
+logger = logging.getLogger(__name__)
 
-def validate_environment():
+
+def validate_environment() -> None:
     """Проверяет наличие необходимых файлов и настроек."""
     print("=" * 60)
     print("ПРОВЕРКА ОКРУЖЕНИЯ")
     print("=" * 60)
     
-    # Проверяем наличие базы знаний
     chroma_dir = "./chroma_db"
     if not os.path.exists(chroma_dir):
         print(f"\n⚠️  ВНИМАНИЕ: Директория {chroma_dir} не найдена!")
@@ -43,22 +45,18 @@ def validate_environment():
     print()
 
 
-def initialize_components(settings: Settings):
+def _init_storage(settings: Settings) -> Tuple[VectorDatabase, UserDatabase]:
     """
-    Инициализирует все компоненты системы.
+    Инициализирует хранилища данных.
     
     Args:
         settings: Настройки приложения
         
     Returns:
-        Кортеж инициализированных компонентов
+        Кортеж (vector_db, user_db)
     """
-    logger = logging.getLogger(__name__)
-    
-    logger.info("Инициализация компонентов...")
-    
-    # 1. Storage - Хранилища
     logger.info("Инициализация хранилищ...")
+    
     vector_db = VectorDatabase(
         persist_directory=settings.chroma_persist_dir,
         collection_name=settings.chroma_collection,
@@ -68,72 +66,194 @@ def initialize_components(settings: Settings):
     
     user_db = UserDatabase(storage_path="./user_data.json")
     
-    # 2. AI Processor - Обработка через ИИ
+    return vector_db, user_db
+
+
+def _init_ai_provider(settings: Settings):
+    """
+    Инициализирует AI-провайдер и генератор ответов.
+    
+    Args:
+        settings: Настройки приложения
+        
+    Returns:
+        Кортеж (client, response_generator)
+        
+    Raises:
+        ValueError: Если указан неподдерживаемый провайдер
+    """
     logger.info(f"Инициализация AI процессора ({settings.ai_provider})...")
     
     if settings.ai_provider == "openai":
-        openai_client = OpenAIClient(
-            api_key=settings.openai_api_key,
-            model=settings.openai_model,
-            temperature=settings.openai_temperature,
-            max_tokens=settings.openai_max_tokens
-        )
-        response_generator = OpenAIResponseGenerator(openai_client=openai_client)
-        logger.info(f"✓ OpenAI клиент инициализирован (модель: {settings.openai_model})")
-        
+        return _init_openai(settings)
     elif settings.ai_provider == "gigachat":
-        from ai_gigachat_processor import GigaChatConfig
-        
-        gigachat_config = GigaChatConfig(
-            authorization_key=settings.gigachat_authorization_key,
-            model=settings.gigachat_model,
-            temperature=settings.gigachat_temperature,
-            max_tokens=settings.gigachat_max_tokens,
-            verify_ssl=settings.gigachat_verify_ssl
-        )
-        
-        gigachat_client = GigaChatClient(config=gigachat_config)
-        response_generator = GigaChatResponseGenerator(gigachat_client=gigachat_client)
-        logger.info(f"✓ GigaChat клиент инициализирован (модель: {settings.gigachat_model})")
-        
+        return _init_gigachat(settings)
     elif settings.ai_provider == "proxyapi":
-        from ai_proxyapi_processor import ProxyAPIConfig
-        
-        proxyapi_config = ProxyAPIConfig(
-            api_key=settings.proxyapi_api_key,
-            model=settings.proxyapi_model,
-            temperature=settings.proxyapi_temperature,
-            max_tokens=settings.proxyapi_max_tokens,
-            base_url=settings.proxyapi_base_url,
-            proxy_url=settings.proxyapi_proxy_url
-        )
-        
-        proxyapi_client = ProxyAPIClient(config=proxyapi_config)
-        response_generator = ProxyAPIResponseGenerator(proxyapi_client=proxyapi_client)
-        logger.info(f"✓ ProxyAPI клиент инициализирован (модель: {settings.proxyapi_model})")
-        
+        return _init_proxyapi(settings)
     else:
         raise ValueError(f"Неподдерживаемый AI provider: {settings.ai_provider}")
     
-    # 3. Memory Manager - Управление памятью
-    logger.info("Инициализация менеджера памяти...")
-    prompt_builder = PromptBuilder()
+
+def _init_openai(settings: Settings):
+    """Инициализирует OpenAI провайдер."""
+    openai_client = OpenAIClient(
+        api_key=settings.openai_api_key,
+        model=settings.openai_model,
+        temperature=settings.openai_temperature,
+        max_tokens=settings.openai_max_tokens
+    )
+    response_generator = OpenAIResponseGenerator(openai_client=openai_client)
+    logger.info(f"✓ OpenAI клиент инициализирован (модель: {settings.openai_model})")
     
+    return openai_client, response_generator
+
+
+def _init_gigachat(settings: Settings):
+    """Инициализирует GigaChat провайдер."""
+    from ai_gigachat_processor import GigaChatConfig
+    
+    gigachat_config = GigaChatConfig(
+        authorization_key=settings.gigachat_authorization_key,
+        model=settings.gigachat_model,
+        temperature=settings.gigachat_temperature,
+        max_tokens=settings.gigachat_max_tokens,
+        verify_ssl=settings.gigachat_verify_ssl
+    )
+    
+    gigachat_client = GigaChatClient(config=gigachat_config)
+    response_generator = GigaChatResponseGenerator(gigachat_client=gigachat_client)
+    logger.info(f"✓ GigaChat клиент инициализирован (модель: {settings.gigachat_model})")
+    
+    return gigachat_client, response_generator
+
+
+def _init_proxyapi(settings: Settings):
+    """Инициализирует ProxyAPI провайдер."""
+    from ai_proxyapi_processor import ProxyAPIConfig
+    
+    proxyapi_config = ProxyAPIConfig(
+        api_key=settings.proxyapi_api_key,
+        model=settings.proxyapi_model,
+        temperature=settings.proxyapi_temperature,
+        max_tokens=settings.proxyapi_max_tokens,
+        base_url=settings.proxyapi_base_url,
+        proxy_url=settings.proxyapi_proxy_url
+    )
+    
+    proxyapi_client = ProxyAPIClient(config=proxyapi_config)
+    response_generator = ProxyAPIResponseGenerator(proxyapi_client=proxyapi_client)
+    logger.info(f"✓ ProxyAPI клиент инициализирован (модель: {settings.proxyapi_model})")
+    
+    return proxyapi_client, response_generator
+
+
+def _init_memory_manager(
+    vector_db: VectorDatabase,
+    response_generator
+) -> Tuple[PromptBuilder, ContextRetriever]:
+    """
+    Инициализирует менеджер памяти.
+    
+    Args:
+        vector_db: Векторная база данных
+        response_generator: Генератор ответов
+        
+    Returns:
+        Кортеж (prompt_builder, context_retriever)
+    """
+    logger.info("Инициализация менеджера памяти...")
+    
+    prompt_builder = PromptBuilder()
     context_retriever = ContextRetriever(
         vector_db=vector_db,
         n_results=settings.rag_n_results
     )
     
-    # 4. Dialog Controller - Управление диалогами
+    return prompt_builder, context_retriever
+
+
+def _init_dialog_controller(settings: Settings) -> SessionManager:
+    """
+    Инициализирует контроллер диалогов.
+    
+    Args:
+        settings: Настройки приложения
+        
+    Returns:
+        SessionManager
+    """
     logger.info("Инициализация контроллера диалогов...")
+    
     session_manager = SessionManager(
         session_timeout=settings.session_timeout
     )
     
-    # 5. Interface - Telegram бот
+    return session_manager
+
+
+def _init_interface(
+    settings: Settings,
+    session_manager: SessionManager,
+    context_retriever: ContextRetriever,
+    response_generator,
+    user_db: UserDatabase,
+    vector_db: VectorDatabase
+) -> TelegramBot:
+    """
+    Инициализирует Telegram бот.
+    
+    Args:
+        settings: Настройки приложения
+        session_manager: Менеджер сессий
+        context_retriever: Получатель контекста
+        response_generator: Генератор ответов
+        user_db: База данных пользователей
+        vector_db: Векторная БД
+        
+    Returns:
+        TelegramBot
+    """
     logger.info("Инициализация Telegram бота...")
+    
     telegram_bot = TelegramBot(
         token=settings.telegram_token,
+        session_manager=session_manager,
+        context_retriever=context_retriever,
+        response_generator=response_generator,
+        user_db=user_db,
+        vector_db=vector_db
+    )
+    
+    return telegram_bot
+
+
+def initialize_components(settings: Settings):
+    """
+    Инициализирует все компоненты системы.
+    
+    Args:
+        settings: Настройки приложения
+        
+    Returns:
+        Инициализированный TelegramBot
+    """
+    logger.info("Инициализация компонентов...")
+    
+    # 1. Storage
+    vector_db, user_db = _init_storage(settings)
+    
+    # 2. AI Provider
+    _, response_generator = _init_ai_provider(settings)
+    
+    # 3. Memory Manager
+    _, context_retriever = _init_memory_manager(vector_db, response_generator)
+    
+    # 4. Dialog Controller
+    session_manager = _init_dialog_controller(settings)
+    
+    # 5. Interface
+    telegram_bot = _init_interface(
+        settings=settings,
         session_manager=session_manager,
         context_retriever=context_retriever,
         response_generator=response_generator,
