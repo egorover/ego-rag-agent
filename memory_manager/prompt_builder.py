@@ -1,30 +1,29 @@
 """
 Построитель промптов.
-Формирует готовые промпты для ИИ на основе контекста и истории.
+Вспомогательные утилиты для работы с контекстом.
+
+Примечание: Основная логика построения сообщений находится в BaseResponseGenerator._build_messages()
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class PromptBuilder:
-    """Построитель промптов для ИИ."""
+    """Вспомогательный построитель для работы с контекстом документов."""
     
     def __init__(
         self,
-        system_prompt: str = None,
         max_context_length: int = 4000
     ):
         """
         Инициализирует построитель промптов.
         
         Args:
-            system_prompt: Системный промпт
             max_context_length: Максимальная длина контекста
         """
-        self.system_prompt = system_prompt
         self.max_context_length = max_context_length
         
         logger.info("PromptBuilder инициализирован")
@@ -91,71 +90,3 @@ class PromptBuilder:
         
         return recent_history
     
-    def build_messages_for_ai(
-        self,
-        query: str,
-        context_documents: List[Dict],
-        conversation_history: Optional[List[Dict]] = None,
-        system_prompt: Optional[str] = None
-    ) -> List[Dict[str, str]]:
-        """
-        Формирует полный список сообщений для ИИ.
-        
-        Args:
-            query: Текущий запрос пользователя
-            context_documents: Документы из базы знаний
-            conversation_history: История диалога
-            system_prompt: Системный промпт (переопределяет дефолтный)
-            
-        Returns:
-            Список сообщений в формате OpenAI
-        """
-        messages = []
-        
-        # Системный промпт
-        sys_prompt = system_prompt or self.system_prompt
-        if sys_prompt:
-            messages.append({"role": "system", "content": sys_prompt})
-        
-        # История диалога (если есть)
-        if conversation_history:
-            filtered_history = self.build_conversation_context(conversation_history)
-            messages.extend(filtered_history)
-        
-        # Формируем контекст из документов
-        context = self.build_context_from_documents(context_documents)
-        
-        # Текущий запрос с контекстом
-        user_message = f"""Контекст из базы знаний:
-
-{context}
-
----
-
-Вопрос пользователя: {query}
-
-Ответь на вопрос, используя информацию из предоставленного контекста."""
-        
-        messages.append({"role": "user", "content": user_message})
-        
-        logger.info(f"Сформирован промпт: {len(messages)} сообщений")
-        
-        return messages
-    
-    def summarize_context(self, text: str, max_length: int = 1000) -> str:
-        """
-        Сокращает контекст до заданной длины.
-        
-        Args:
-            text: Исходный текст
-            max_length: Максимальная длина
-            
-        Returns:
-            Сокращенный текст
-        """
-        if len(text) <= max_length:
-            return text
-        
-        # Простое обрезание с многоточием
-        return text[:max_length - 3] + "..."
-

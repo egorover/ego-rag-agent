@@ -117,9 +117,7 @@ def initialize_components(settings: Settings):
     
     # 3. Memory Manager - Управление памятью
     logger.info("Инициализация менеджера памяти...")
-    prompt_builder = PromptBuilder(
-        system_prompt=response_generator.system_prompt
-    )
+    prompt_builder = PromptBuilder()
     
     context_retriever = ContextRetriever(
         vector_db=vector_db,

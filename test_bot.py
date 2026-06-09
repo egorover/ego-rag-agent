@@ -51,7 +51,7 @@ try:
     
     # 5. Memory Manager
     print("\n[5/6] Инициализация Memory Manager...")
-    prompt_builder = PromptBuilder(system_prompt=response_generator.system_prompt)
+    prompt_builder = PromptBuilder()
     context_retriever = ContextRetriever(vector_db=vector_db, n_results=settings.rag_n_results)
     print("      [OK]")
     
